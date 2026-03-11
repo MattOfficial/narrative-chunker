@@ -45,3 +45,24 @@ nodes = chunker.parse_and_chunk(
 
 # Every extracted chunk natively contains {'tenant_id': 'ABC-123', ...} in its metadata!
 ```
+
+### 3. Customizable Chunking Algorithms
+By default, `NarrativeChunker` uses a robust `SentenceSplitter`. However, you can seamlessly inject **any** LlamaIndex `NodeParser` algorithm into the constructor to adapt to your specific domain (e.g., Semantic Chunking, Token Splitting, or Markdown Splitting):
+
+```python
+from narrative_chunker import NarrativeChunker
+from llama_index.core.node_parser import SemanticSplitterNodeParser
+from llama_index.embeddings.openai import OpenAIEmbedding
+
+# 1. Initialize a state-of-the-art semantic AI chunker
+embed_model = OpenAIEmbedding(model="text-embedding-3-small", embed_batch_size=100)
+semantic_parser = SemanticSplitterNodeParser(
+    buffer_size=1, breakpoint_percentile_threshold=95, embed_model=embed_model
+)
+
+# 2. Inject the semantic algorithm into the Narrative orchestrator
+chunker = NarrativeChunker(parser=semantic_parser)
+
+# 3. All chunks will now be intelligently sliced by semantic cosine-similarity!
+nodes = chunker.parse_and_chunk(file_path="dune.epub", filename="dune.epub")
+```
